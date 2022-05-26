@@ -5,7 +5,7 @@ import Maker from './components/maker/maker';
 
 function App({authService}) {
   return (
-    <div class={styles.app}>
+    <div className={styles.app}>
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Login authService={authService} />}/>

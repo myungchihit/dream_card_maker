@@ -58,11 +58,17 @@ const Maker = ({ authService }) => {
         });
     })
 
+    // Maker에서 Card 신규추가
+    const addCard = (card) => {
+        const updated = [...cards , card];
+        setCards(updated);
+    };
+
     return (
         <section className={styles.maker}>
             <Header onLogout={onLogout}/>
             <div className={styles.container}>
-                <Editor cards={cards}/>
+                <Editor cards={cards} addCard={addCard}/>
                 <Preview cards={cards}/>
             </div>
             <Footer />
