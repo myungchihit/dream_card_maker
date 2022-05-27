@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import styles from './maker.module.css';
 import Header from '../header/header';
 import Footer from '../footer/footer';
@@ -16,10 +16,15 @@ const Maker = ({ FileInput, authService , cardRepository }) => {
     const [userId, setUserId] = useState(location && location.id);
 
     const navigate = useNavigate();
-    const onLogout = () => {
-        authService.logout();
-    }
 
+    // onLogout은 Maker의 지역변수이기 때문에 Maker가 변경이 될때마다
+    // header가 계속 랜더링된다. 때문에 useCallback을 사용함.
+    // [authService]를 지정하지 않으면 예전의 authService가 남아있기 때문에
+    // onLogout 안에서 authService를 사용하기때문에 authService가 변경될때마다 업데이트 되게끔 만들어준다.
+    const onLogout = useCallback(() => {
+        authService.logout();
+    }, [authService]);
+    
     // useEffect는 사용별로 여러개 만들 수 있음.
     // firebase에서 데이터 조회
     // syncCards 콜백함수를 받는다.
