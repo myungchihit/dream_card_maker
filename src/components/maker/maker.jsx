@@ -31,7 +31,7 @@ const Maker = ({ FileInput, authService , cardRepository }) => {
             setCards(cards);
         });
         return () => stopSync();
-    }, [userId]);
+    }, [userId , cardRepository]);
 
     // 로그인 관련 useEffect
     // logout이 자동으로 되게끔
@@ -44,7 +44,7 @@ const Maker = ({ FileInput, authService , cardRepository }) => {
                 navigate("/");
             }
         });
-    });
+    }, [authService, navigate]);
 
     const createOrUpdateCard = card => {
         setCards(cards => {
