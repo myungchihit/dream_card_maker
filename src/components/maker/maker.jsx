@@ -2,64 +2,49 @@ import React, { useEffect, useState } from 'react';
 import styles from './maker.module.css';
 import Header from '../header/header';
 import Footer from '../footer/footer';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Editor from '../editor/editor';
 import Preview from '../preview/preview';
 
-const Maker = ({ FileInput, authService }) => {
+const Maker = ({ FileInput, authService , cardRepository }) => {
 
+    const location = useLocation();
     // 배열이 아니라 Object로 데이터를 저장
     // id가 key값으로 저장시킬것 --> 배열로 map을 쓰는경우 배열이 늘어날때마다 성능이 저하된다.
     // Object.keys로 배열 만들고 arr[id] 이런식으로 검색하려고
-    const [cards, setCards] = useState({
-        1: {
-          id: '1',
-          name: 'Ellie',
-          company: 'Samsung',
-          theme: 'dark',
-          title: 'Software Engineer',
-          email: 'ellie@gmail.com',
-          message: 'go for it',
-          fileName: 'ellie',
-          fileURL: null,
-        },
-        2: {
-          id: '2',
-          name: 'Ellie2',
-          company: 'Samsung',
-          theme: 'light',
-          title: 'Software Engineer',
-          email: 'ellie@gmail.com',
-          message: 'go for it',
-          fileName: 'ellie',
-          fileURL: 'ellie.png',
-        },
-        3: {
-          id: '3',
-          name: 'Ellie3',
-          company: 'Samsung',
-          theme: 'colorful',
-          title: 'Software Engineer',
-          email: 'ellie@gmail.com',
-          message: 'go for it',
-          fileName: 'ellie',
-          fileURL: null,
-        },
-    });
+    const [cards, setCards] = useState({});
+    const [userId, setUserId] = useState(location && location.id);
 
     const navigate = useNavigate();
     const onLogout = () => {
         authService.logout();
     }
 
+    // useEffect는 사용별로 여러개 만들 수 있음.
+    // firebase에서 데이터 조회
+    // syncCards 콜백함수를 받는다.
+    useEffect(() => {
+        if(!userId){
+            return;
+        }
+        const stopSync = cardRepository.syncCards(userId, cards => {
+            setCards(cards);
+        });
+        return () => stopSync();
+    }, [userId]);
+
+    // 로그인 관련 useEffect
     // logout이 자동으로 되게끔
     useEffect(() => {
         authService.onAuthChange(user => {
-            if(!user){
+            if(user){
+               setUserId(user.uid); 
+            }
+            else{
                 navigate("/");
             }
         });
-    })
+    });
 
     const createOrUpdateCard = card => {
         setCards(cards => {
@@ -67,6 +52,8 @@ const Maker = ({ FileInput, authService }) => {
             updated[card.id] = card;
             return updated;
         });
+        // DB에 추가
+        cardRepository.saveCard(userId, card);
     };
     
     const deleteCard = card => {
@@ -75,6 +62,7 @@ const Maker = ({ FileInput, authService }) => {
             delete updated[card.id];
             return updated;
         });
+        cardRepository.removeCard(userId, card);
     };
 
     return (
